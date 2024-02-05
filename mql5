@@ -1,0 +1,56 @@
+
+// DirectionalTrend MT4
+// Developer's Site: forexroboteasy.com
+// Development: Forex Robot Easy Team
+
+#property strict
+
+input int TimeFrame = PERIOD_D1; // Time frame for trend calculation
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Set up indicator buffers
+    SetIndexBuffer(0, TrendBuffer);
+    IndicatorShortName('DirectionalTrend MT4');
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime& time[],
+                const double& open[],
+                const double& high[],
+                const double& low[],
+                const double& close[],
+                const long& tick_volume[],
+                const long& volume[],
+                const int& spread[])
+{
+    int limit = rates_total - prev_calculated;
+
+    if (prev_calculated > 0)
+        limit++;
+
+    // Calculate trend
+    for (int i = limit - 1; i >= 0; i--)
+    {
+        double high_ma = iMA(NULL, TimeFrame, 0, 0, MODE_EMA, PRICE_HIGH, i);
+        double low_ma = iMA(NULL, TimeFrame, 0, 0, MODE_EMA, PRICE_LOW, i);
+
+        if (high[i] > high_ma && low[i] > low_ma)
+            TrendBuffer[i] = 1; // Upward trend
+        else if (high[i] < high_ma && low[i] < low_ma)
+            TrendBuffer[i] = -1; // Downward trend
+        else
+            TrendBuffer[i] = 0; // No trend
+    }
+
+    return(rates_total);
+}
